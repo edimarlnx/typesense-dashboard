@@ -23,10 +23,13 @@ export class Api {
       baseURL: `${node.protocol}://${node.host}:${node.port}${node.path || ''}`,
       headers: {'x-typesense-api-key': apiKey }
     });
+    const { host} = node;
+    const nodes = !host.includes(',') ?
+      [node] :
+      host.split(',')
+        .map((h) => ({ ...node, host: h }));
     this.typesenseClient = new Typesense.Client({
-      nodes: [{
-        ...node
-      }],
+      nodes,
       apiKey,
       //connection_timeout_seconds: 3600,
     });
@@ -168,6 +171,12 @@ export class Api {
     return this.typesenseClient?.collections(collectionName).documents().search(searchParameters);
   }
 
+  public metrics() {
+    return this.typesenseClient?.apiCall.get('/metrics.json')
+  }
+  public stats() {
+    return this.typesenseClient?.apiCall.get('/stats.json')
+  }
 
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
   public get(url:string):Promise<any>|void {

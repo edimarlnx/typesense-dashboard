@@ -6,7 +6,6 @@ import {
   STORAGE_KEY_LOGIN,
 } from './state';
 import { LocalStorage, Notify } from 'quasar';
-import { AxiosError, AxiosResponse } from 'axios';
 import FileSaver from 'file-saver';
 import { CollectionSchema, CollectionUpdateSchema } from 'typesense/lib/Typesense/Collection';
 import { CollectionAliasCreateSchema, CollectionAliasSchema } from 'typesense/lib/Typesense/Aliases';
@@ -26,10 +25,10 @@ const actions: ActionTree<NodeStateInterface, StateInterface> = {
   connectionCheck(context) {
     if (context.state.loginData) {
       context.getters.api
-        .get('/metrics.json')
-        .then(async (response: AxiosResponse) => {
+        .metrics()
+        .then(async (data: any) => {
           context.commit('setData', {
-            metrics: response.data,
+            metrics: data,
           });
           // minimal required data to consider the connection as successful
           await Promise.all([
@@ -76,7 +75,7 @@ const actions: ActionTree<NodeStateInterface, StateInterface> = {
           context.commit('saveHistory');
           context.commit('setError', null);
         })
-        .catch((error: AxiosError) => {
+        .catch((error: Error) => {
           context.commit('setIsConnected', false);
           context.commit('setError', error.message);
         });
@@ -86,17 +85,17 @@ const actions: ActionTree<NodeStateInterface, StateInterface> = {
   },
   refreshServerStatus(context) {
     context.getters.api
-      .get('/metrics.json')
-      .then((response: AxiosResponse) => {
+      .metrics()
+      .then((data: any) => {
         context.commit('setData', {
-          metrics: response.data,
+          metrics: data,
         });
       })
     context.getters.api
-      .get('/stats.json')
-      .then((response: AxiosResponse) => {
+      .stats()
+      .then((data: any) => {
         context.commit('setData', {
-          stats: response.data,
+          stats: data,
         })
         if (!context.state.data.features.stats) {
           context.commit('setFeature', {
@@ -526,7 +525,7 @@ const actions: ActionTree<NodeStateInterface, StateInterface> = {
     } catch (error) {
       context.commit('setError', (error as Error).message);
     }
-  },  
+  },
 };
 
 export default actions;
