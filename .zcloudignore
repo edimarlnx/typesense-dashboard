@@ -1,0 +1,7 @@
+public/config.json
+.quasar/
+.dist/
+.vscode/
+.idea/
+node_modules/
+.github/
